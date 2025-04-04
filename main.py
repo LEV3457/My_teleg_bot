@@ -1,10 +1,10 @@
 import asyncio
 import os
 from loguru import logger
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from dotenv import find_dotenv, load_dotenv
-import emoji
+from aiogram.enums import ChatType
 
 
 load_dotenv(find_dotenv())
@@ -30,17 +30,28 @@ async def main():
         logger.info("Бот ответил на команду /start")
 
 
-        @dp.message(Command("help"))
-        async def help(message: types.Message):
-            await message.answer("держи подарочек")
-            logger.info("Бот обьяснил, что делает")
+    @dp.message(Command("help"))
+    async def help(message: types.Message):
+        await message.answer("держи подарочек")
+        logger.info("Бот обьяснил, что делает")
 
-        @dp.message()
-        async def echo(message: types.Message):
-            await message.answer(message.text)  
-            logger.info(f"Бот вернул пользователю сообщение {message.text}")
+    @dp.message()
+    async def echo(message: types.Message):
+        await message.answer(message.text)  
+        logger.info(f"Бот вернул пользователю сообщение {message.text}")
 
 
+
+    @router.message(
+        F.chat.type.in_([ChatType.GROUP, ChatType.SUPERGROUP]),
+        F.text.lower().contains('дать')
+        )
+    async def cry(message: types.Message):
+        sender = message.from_user
+        sender_username = f"@{sender.username}" if sender.username else sender.first_name
+        await message.reply(f"{sender_username} нет конфет")
+    
+    
     await dp.start_polling(bot)
 
 
